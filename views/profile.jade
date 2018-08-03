@@ -1,0 +1,21 @@
+console.log(user)
+h2 User Profile
+ p
+        h6  #{user.provider} ID: #{user.id}
+        h6 Provider : #{user.provider}
+        h6 Name : #{user.displayName}
+        h6 Profile Picture : #{user._json.image.url}
+        h6 Data Received : #{JSON.stringify(user)}
+
+
+
+
+
+
+//p
+//    | ID : #{user.id}
+//    | Username : #{user.username}
+//    | Name : #{user.displayName}
+//    | if(user.emails){
+//    | Email : #{user.emails[0].value}
+//    | }

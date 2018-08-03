@@ -19,3 +19,8 @@ ul.error li{
     border-color: #ebccd1;
     list-style: none;
 }
+.myButton{
+    margin-right: 14px;
+    margin-top: 24px;
+
+}

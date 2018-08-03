@@ -19,6 +19,8 @@ html(lang='en')
             if user
              li(class=(title == 'Members' ? 'active' : ''))
                a(href='/') Members
+               a(href='/users/profile') Profile
+
             if !user
              li(class=(title == 'Register' ? 'active' : ''))
                a(href='/users/register') Register
@@ -33,4 +35,4 @@ html(lang='en')
      block content
      
     script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js')
-    script(src='javascripts/bootstrap.js')
+    script(src='/javascripts/bootstrap.js')

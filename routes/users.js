@@ -4,8 +4,48 @@ var multer = require('multer');
 var upload = multer({dest: './uploads'});
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
+var FacebookStrategy = require('passport-facebook').Strategy;
+var GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 var User = require('../models/user');
+
+passport.use(new FacebookStrategy({
+        clientID: '235058090661925',
+        clientSecret: '72e3deb1491fd1f2d6f26b6ac7e3ab03',
+        callbackURL: "http://localhost:3000/users/login/facebook/callback",
+        profileFields: ['id', 'displayName', 'photos', 'email']
+    },
+    function(accessToken, refreshToken, profile, cb) {
+
+        return cb(null, profile);
+
+    }
+));
+
+passport.serializeUser(function(user, cb) {
+    cb(null, user);
+});
+
+passport.deserializeUser(function(obj, cb) {
+    cb(null, obj);
+});
+
+
+router.get('/login/facebook',
+    passport.authenticate('facebook'));
+
+router.get('/login/facebook/callback',
+    passport.authenticate('facebook', { failureRedirect: '/login' }),
+    function(req, res) {
+        res.redirect('/');
+    });
+router.get('/profile',
+    require('connect-ensure-login').ensureLoggedIn(),
+    function(req, res){
+        res.render('profile', { user: req.user });
+    });
+
+// var User = require('../models/user');
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
@@ -27,84 +67,163 @@ router.post('/login',
    res.redirect('/');
 });
 
-passport.serializeUser(function(user, done) {
-  done(null, user.id);
-});
 
-passport.deserializeUser(function(id, done) {
-  User.getUserById(id, function(err, user) {
-    done(err, user);
-  });
-});
+/**
+ * Sign in with Google.
+ */
+passport.use(new GoogleStrategy({
+    clientID: '19643501870-vu3imvelih4iu3f2d6r9fe9kqlikof2v.apps.googleusercontent.com',
+    clientSecret: 'ddb24kVvv_9yPp1xFOxWfzEw',
+    callbackURL: 'http://localhost:3000/users/login/google/callback'
+}, function(accessToken, refreshToken, profile, cb) {
+    console.log('profile is ' + JSON.stringify(profile));
 
-passport.use(new LocalStrategy(function(username, password, done){
-  User.getUserByUsername(username, function(err, user){
-    if(err) throw err;
-    if(!user){
-      return done(null, false, {message: 'Unknown User'});
-    }
+    return cb(null , profile);
 
-    User.comparePassword(password, user.password, function(err, isMatch){
-      if(err) return done(err);
-      if(isMatch){
-        return done(null, user);
-      } else {
-        return done(null, false, {message:'Invalid Password'});
-      }
+}
+));
+
+
+
+// }, (req, accessToken, refreshToken, profile , done) => {
+//     if (req.user) {
+//     User.findOne({ google: profile.id }, (err, existingUser) => {
+//         if (err) { return done(err); }
+//         if (existingUser) {
+//             req.flash('errors', { msg: 'There is already a Google account that belongs to you. Sign in with that account or delete it, then link it with your current account.' });
+//             done(err);
+//         } else {
+//             User.findById(req.user.id, (err, user) => {
+//             if (err) { return done(err); }
+//             user.google = profile.id;
+//     user.tokens.push({ kind: 'google', accessToken });
+//     user.profile.name = user.profile.name || profile.displayName;
+//     user.profile.gender = user.profile.gender || profile._json.gender;
+//     user.profile.picture = user.profile.picture || profile._json.image.url;
+//     user.save((err) => {
+//         req.flash('info', { msg: 'Google account has been linked.' });
+//     done(err, user);
+// });
+// });
+// }
+// });
+// } else {
+//     User.findOne({ google: profile.id }, (err, existingUser) => {
+//         if (err) { return done(err); }
+//         if (existingUser) {
+//             return done(null, existingUser);
+//         }
+//         User.findOne({ email: profile.emails[0].value }, (err, existingEmailUser) => {
+//         if (err) { return done(err); }
+//         if (existingEmailUser) {
+//             req.flash('errors', { msg: 'There is already an account using this email address. Sign in to that account and link it with Google manually from Account Settings.' });
+//             done(err);
+//         } else {
+//             const user = new User();
+//     user.email = profile.emails[0].value;
+//     user.google = profile.id;
+//     user.tokens.push({ kind: 'google', accessToken });
+//     user.profile.name = profile.displayName;
+//     user.profile.gender = profile._json.gender;
+//     user.profile.picture = profile._json.image.url;
+//     user.save((err) => {
+//         done(err, user);
+// });
+// }
+// });
+// });
+// }
+// }));
+
+router.get('/login/google', passport.authenticate('google', { scope: ['profile','email'] }));
+
+router.get('/login/google/callback',
+    passport.authenticate('google', { failureRedirect: '/login' }),
+    function(req, res) {
+        res.redirect('/');
     });
-  });
-}));
 
-router.post('/register', upload.single('profileimage') ,function(req, res, next) {
-  var name = req.body.name;
-  var email = req.body.email;
-  var username = req.body.username;
-  var password = req.body.password;
-  var password2 = req.body.password2;
+// passport.serializeUser(function(user, done) {
+//   done(null, user.id);
+// });
+//
+// passport.deserializeUser(function(id, done) {
+//   User.getUserById(id, function(err, user) {
+//     done(err, user);
+//   });
+// });
 
-  if(req.file){
-  	console.log('Uploading File...');
-  	var profileimage = req.file.filename;
-  } else {
-  	console.log('No File Uploaded...');
-  	var profileimage = 'noimage.jpg';
-  }
+// passport.use(new LocalStrategy(function(username, password, done){
+//   User.getUserByUsername(username, function(err, user){
+//     if(err) throw err;
+//     if(!user){
+//       return done(null, false, {message: 'Unknown User'});
+//     }
+//
+//     User.comparePassword(password, user.password, function(err, isMatch){
+//       if(err) return done(err);
+//       if(isMatch){
+//         return done(null, user);
+//       } else {
+//         return done(null, false, {message:'Invalid Password'});
+//       }
+//     });
+//   });
+// }));
 
-  // Form Validator
-  req.checkBody('name','Name field is required').notEmpty();
-  req.checkBody('email','Email field is required').notEmpty();
-  req.checkBody('email','Email is not valid').isEmail();
-  req.checkBody('username','Username field is required').notEmpty();
-  req.checkBody('password','Password field is required').notEmpty();
-  req.checkBody('password2','Passwords do not match').equals(req.body.password);
-
-  // Check Errors
-  var errors = req.validationErrors();
-
-  if(errors){
-  	res.render('register', {
-  		errors: errors
-  	});
-  } else{
-  	var newUser = new User({
-      name: name,
-      email: email,
-      username: username,
-      password: password,
-      profileimage: profileimage
-    });
-
-    User.createUser(newUser, function(err, user){
-      if(err) throw err;
-      console.log(user);
-    });
-
-    req.flash('success', 'You are now registered and can login');
-
-    res.location('/');
-    res.redirect('/');
-  }
-});
+//
+//
+//
+// router.post('/register', upload.single('profileimage') ,function(req, res, next) {
+//   var name = req.body.name;
+//   var email = req.body.email;
+//   var username = req.body.username;
+//   var password = req.body.password;
+//   var password2 = req.body.password2;
+//
+//   if(req.file){
+//   	console.log('Uploading File...');
+//   	var profileimage = req.file.filename;
+//   } else {
+//   	console.log('No File Uploaded...');
+//   	var profileimage = 'noimage.jpg';
+//   }
+//
+//   // Form Validator
+//   req.checkBody('name','Name field is required').notEmpty();
+//   req.checkBody('email','Email field is required').notEmpty();
+//   req.checkBody('email','Email is not valid').isEmail();
+//   req.checkBody('username','Username field is required').notEmpty();
+//   req.checkBody('password','Password field is required').notEmpty();
+//   req.checkBody('password2','Passwords do not match').equals(req.body.password);
+//
+//   // Check Errors
+//   var errors = req.validationErrors();
+//
+//   if(errors){
+//   	res.render('register', {
+//   		errors: errors
+//   	});
+//   } else{
+//   	var newUser = new User({
+//       name: name,
+//       email: email,
+//       username: username,
+//       password: password,
+//       profileimage: profileimage
+//     });
+//
+//     User.createUser(newUser, function(err, user){
+//       if(err) throw err;
+//       console.log(user);
+//     });
+//
+//     req.flash('success', 'You are now registered and can login');
+//
+//     res.location('/');
+//     res.redirect('/');
+//   }
+// });
 
 router.get('/logout', function(req, res){
   req.logout();
