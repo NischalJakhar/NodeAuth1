@@ -10,9 +10,9 @@ var GoogleStrategy = require('passport-google-oauth20').Strategy;
 var User = require('../models/user');
 
 passport.use(new FacebookStrategy({
-        clientID: '235058090661925',
-        clientSecret: '72e3deb1491fd1f2d6f26b6ac7e3ab03',
-        callbackURL: "http://localhost:3000/users/login/facebook/callback",
+        clientID: 'null',
+        clientSecret: 'null',
+        callbackURL: "null",
         profileFields: ['id', 'displayName', 'photos', 'email']
     },
     function(accessToken, refreshToken, profile, cb) {
@@ -72,9 +72,9 @@ router.post('/login',
  * Sign in with Google.
  */
 passport.use(new GoogleStrategy({
-    clientID: '19643501870-vu3imvelih4iu3f2d6r9fe9kqlikof2v.apps.googleusercontent.com',
-    clientSecret: 'ddb24kVvv_9yPp1xFOxWfzEw',
-    callbackURL: 'http://localhost:3000/users/login/google/callback'
+    clientID: 'null',
+    clientSecret: 'null',
+    callbackURL: 'null'
 }, function(accessToken, refreshToken, profile, cb) {
     console.log('profile is ' + JSON.stringify(profile));
 
